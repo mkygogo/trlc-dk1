@@ -178,7 +178,7 @@ class MotorControl:
         control the motor in EMIT control mode 电机力位混合模式
         :param Pos_des: desired position rad  期望位置 单位为rad
         :param Vel_des: desired velocity rad/s  期望速度 为放大100倍
-        :param i_des: desired current rang 0-10000 期望电流标幺值放大10000倍
+        :param i_des: desired current rang 0-10000 期望电流标幺值放大1000倍
         电流标幺值：实际电流值除以最大电流值，最大电流见上电打印
         """
         if Motor.SlaveID not in self.motors_map:
