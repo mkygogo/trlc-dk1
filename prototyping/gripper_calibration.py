@@ -28,7 +28,7 @@ while not open_reached:
 
 print("Open reached")
 control.control_Vel(motor1, -2.0)
-time.sleep(0.1)
+time.sleep(0.2)
 control.refresh_motor_status(motor1)
 gripper_open_position = motor1.getPosition()
 print(f"Gripper open position: {gripper_open_position:.3f}")
