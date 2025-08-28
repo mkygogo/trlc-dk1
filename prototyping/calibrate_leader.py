@@ -3,20 +3,20 @@ import time
 import numpy as np
 
 leader_config = DK1LeaderConfig(
-    port="/dev/tty.usbmodem58FA0824281",
+    port="/dev/tty.usbmodem58FA0824311",
 )
 
 leader = DK1Leader(leader_config)
 leader.connect()
 
-directions = {
-    "joint_1": 1,
-    "joint_2": -1,
-    "joint_3": -1,
-    "joint_4": 1,
-    "joint_5": 1,
-    "joint_6": 1,
-}
+# directions = {
+#     "joint_1": 1,
+#     "joint_2": -1,
+#     "joint_3": -1,
+#     "joint_4": 1,
+#     "joint_5": 1,
+#     "joint_6": 1,
+# }
 
 
 while True:

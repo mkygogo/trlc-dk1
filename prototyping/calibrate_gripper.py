@@ -3,7 +3,7 @@ import serial
 import time
 
 
-motor1=Motor(DM_Motor_Type.DM4310, 0x01, 0x11)
+motor1=Motor(DM_Motor_Type.DM4310, 0x07, 0x17)
 
 serial_device = serial.Serial('/dev/tty.usbmodem00000000050C1', 921600, timeout=0.5)
 control=MotorControl(serial_device)
