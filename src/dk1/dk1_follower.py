@@ -25,6 +25,9 @@ class DK1FollowerConfig(RobotConfig):
     max_relative_target: int | None = None
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
     use_degrees: bool = True
+    
+    gripper_open_position: float = 0.0
+    gripper_closed_position: float = -4.607
 
 
 class DK1Follower(Robot):
@@ -43,6 +46,7 @@ class DK1Follower(Robot):
             "joint_4": Motor(DM_Motor_Type.DM4310, 0x04, 0x14),
             "joint_5": Motor(DM_Motor_Type.DM4310, 0x05, 0x15),
             "joint_6": Motor(DM_Motor_Type.DM4310, 0x06, 0x16),
+            "gripper": Motor(DM_Motor_Type.DM4310, 0x07, 0x17),
         }
         
         self.cameras = make_cameras_from_configs(config.cameras)
@@ -87,27 +91,14 @@ class DK1Follower(Robot):
             self.control.addMotor(motor)
             self.control.switchControlMode(motor, Control_Type.POS_VEL)
             self.control.refresh_motor_status(motor)
-            self.control.change_motor_param(motor, DM_variable.KP_APR, 120)
-            print(f"KP_APR set to {self.control.read_motor_param(motor, DM_variable.KP_APR)}")
             self.control.enable(motor)
-
-        # Switch control mode to position velocity
-        # for motor in self.motors.values():
-        #     self.control.switchControlMode(motor, Control_Type.POS_VEL)
         
-        # self.bus.connect()
-        # if not self.is_calibrated and calibrate:
-        #     logger.info(
-        #         "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-        #     )
-        #     self.calibrate()
-        
-        self.connected = True
 
         for cam in self.cameras.values():
             cam.connect()
 
-        # self.configure()
+        self.configure()
+        self.connected = True
         logger.info(f"{self} connected.")
 
     @property
@@ -155,16 +146,10 @@ class DK1Follower(Robot):
         # print("Calibration saved to", self.calibration_fpath)
 
     def configure(self) -> None:
-        pass
-        # with self.bus.torque_disabled():
-        #     self.bus.configure_motors()
-        #     for motor in self.bus.motors:
-        #         self.bus.write("Operating_Mode", motor, OperatingMode.POSITION.value)
-        #         # Set P_Coefficient to lower value to avoid shakiness (Default is 32)
-        #         self.bus.write("P_Coefficient", motor, 16)
-        #         # Set I_Coefficient and D_Coefficient to default value 0 and 32
-        #         self.bus.write("I_Coefficient", motor, 0)
-        #         self.bus.write("D_Coefficient", motor, 32)
+        for motor_name in ["joint_1", "joint_2", "joint_3"]:
+            motor = self.motors[motor_name]
+            self.control.change_motor_param(motor, DM_variable.KP_APR, 120)
+            print(f"KP_APR set to {self.control.read_motor_param(motor, DM_variable.KP_APR)}")
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
@@ -196,7 +181,7 @@ class DK1Follower(Robot):
 
         return obs_dict
 
-    def send_action(self, action: dict[str, Any], velocity: float = 1.0) -> dict[str, Any]:
+    def send_action(self, action: dict[str, Any], velocity: float = 6.0) -> dict[str, Any]:
         """Command arm to move to a target joint configuration.
 
         The relative action magnitude may be clipped depending on the configuration parameter
@@ -223,7 +208,16 @@ class DK1Follower(Robot):
 
         # Send goal position to the arm        
         for motor_name, motor in self.motors.items():
-            self.control.control_Pos_Vel(motor, P_desired=goal_pos[motor_name], V_desired=velocity)
+            if motor_name == "gripper":
+                # Handle gripper separately with different control parameters
+                # Map from normalized range (1 closed, 0 open) to config range
+                gripper_range = self.config.gripper_closed_position - self.config.gripper_open_position
+                gripper_pos = self.config.gripper_open_position + goal_pos[motor_name] * gripper_range
+                
+                self.control.control_Pos_Vel(motor, P_desired=gripper_pos, V_desired=velocity)
+            else:
+                # Handle arm joints
+                self.control.control_Pos_Vel(motor, P_desired=goal_pos[motor_name], V_desired=velocity)
         
         return {f"{motor}.pos": val for motor, val in goal_pos.items()}
 

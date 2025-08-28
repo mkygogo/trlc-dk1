@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 class DK1LeaderConfig(TeleoperatorConfig):
     port: str
     use_degrees: bool = True
+    gripper_open_position: int = 2290
+    gripper_closed_position: int = 1667
     
     
 class DK1Leader(Teleoperator):
@@ -38,6 +40,7 @@ class DK1Leader(Teleoperator):
                 "joint_4": Motor(4, "xl330-m077", MotorNormMode.DEGREES),
                 "joint_5": Motor(5, "xl330-m077", MotorNormMode.DEGREES),
                 "joint_6": Motor(6, "xl330-m077", MotorNormMode.DEGREES),
+                "gripper": Motor(7, "xl330-m077", MotorNormMode.DEGREES),
             },
         )
         print(self.calibration_dir)
@@ -59,11 +62,12 @@ class DK1Leader(Teleoperator):
             raise DeviceAlreadyConnectedError(f"{self} already connected")
 
         self.bus.connect()
-        if not self.is_calibrated and calibrate:
-            logger.info(
-                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-            )
-            self.calibrate()
+        # if not self.is_calibrated and calibrate:
+        #     logger.info(
+        #         "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+        #     )
+        #     self.calibrate()
+        
 
         self.configure()
         logger.info(f"{self} connected.")
@@ -78,6 +82,12 @@ class DK1Leader(Teleoperator):
     def configure(self) -> None:
         self.bus.disable_torque()
         self.bus.configure_motors()
+        
+        self.bus.write("Torque_Enable", "gripper", 0, normalize=False)
+        self.bus.write("Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value, normalize=False)
+        self.bus.write("Current_Limit", "gripper", 100, normalize=False)
+        self.bus.write("Torque_Enable", "gripper", 1, normalize=False)
+        self.bus.write("Goal_Position", "gripper", self.config.gripper_open_position, normalize=False)
 
         # Use 'position control current based' for gripper to be limited by the limit of the current.
         # For the follower gripper, it means it can grasp an object without forcing too much even tho,
@@ -91,7 +101,8 @@ class DK1Leader(Teleoperator):
         #     self.bus.write("Goal_Position", "gripper", self.config.gripper_open_pos)
 
     def setup_motors(self) -> None:
-        for motor in reversed(self.bus.motors):
+        for motor in self.bus.motors:
+        # for motor in reversed(self.bus.motors):
             input(f"Connect the controller board to the '{motor}' motor only and press enter.")
             self.bus.setup_motor(motor)
             print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
@@ -105,8 +116,8 @@ class DK1Leader(Teleoperator):
         
         directions = {
             "joint_1": 1,
-            "joint_2": -1,
-            "joint_3": -1,
+            "joint_2": 1,
+            "joint_3": 1,
             "joint_4": 1,
             "joint_5": 1,
             "joint_6": 1,
@@ -115,7 +126,12 @@ class DK1Leader(Teleoperator):
 
         action = self.bus.sync_read(normalize=False, data_name="Present_Position")
         # action = {f"{motor}.pos": (val/4096*360-180)*directions[motor] for motor, val in action.items()}
-        action = {f"{motor}.pos": (val/4096*2*np.pi-np.pi)*directions[motor] for motor, val in action.items()}
+        
+        action = {f"{motor}.pos": (val/4096*2*np.pi-np.pi)*directions[motor] if motor != "gripper" else val for motor, val in action.items()}
+        # Normalize gripper position between 1 (closed) and 0 (open)
+        gripper_range = self.config.gripper_open_position - self.config.gripper_closed_position
+        action["gripper.pos"] = 1 - (action["gripper.pos"] - self.config.gripper_closed_position) / gripper_range
+        # action["gripper.pos"] = action["gripper.pos"] * 100
         
         
         #action = {f"{motor}.pos": val for motor, val in action.items()}
