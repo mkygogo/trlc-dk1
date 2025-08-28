@@ -3,7 +3,7 @@
 # TRLC-DK1
 Open-source **D**evelopment **K**it for AI-native Robotics 
 
-### Development
+### Examples
 Teleoperate a single leader-follower setup:
 ```
 lerobot-teleoperate \
