@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trlc_dk1"
+version = "2025.9.0"
+dependencies = [
+  "numpy>=2.0.1",
+  "pyserial>=3.5",
+  "dynamixel-sdk>=3.7.31"
+]
+
+authors = [
+  {name = "Jannik Grothusen", email = "jannik@robot-learning.co"},
+]
+maintainers = [
+  {name = "Jannik Grothusen", email = "jannik@robot-learning.co"},
+]
+
+[project.urls]
+Homepage = "https://www.robot-learning.co/"
+Documentation = "https://www.docs.robot-learning.co/"
