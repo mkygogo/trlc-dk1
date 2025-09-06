@@ -15,7 +15,7 @@ Open Source **D**evelopment **K**it for AI-native Robotics by The Robot Learning
 
 ## Demo
 <p align="center">
-    <img src="media/demo.gif">
+    <img src="media/demo.gif" width="800">
 </p>
 
 ## Examples
