@@ -8,7 +8,8 @@ version = "2025.9.0"
 dependencies = [
   "numpy>=2.0.1",
   "pyserial>=3.5",
-  "dynamixel-sdk>=3.7.31"
+  "dynamixel-sdk>=3.7.31",
+  "lerobot@git+https://github.com/robot-learning-co/lerobot.git@main",
 ]
 
 authors = [
