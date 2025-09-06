@@ -1,6 +1,5 @@
 <p align="center">
-    <img src="https://github.com/robot-learning-co/trlc-dk1/blob/v0.2_refactor/media/demo.gif"
-        height="130">
+    <img src="https://github.com/robot-learning-co/trlc-dk1/blob/v0.2_refactor/media/demo.gif">
 </p>
 <p align="center">
     <a href="https://discord.gg/PTZ3CN5WkJ">
