@@ -5,16 +5,14 @@
 <p align="center">
     <a href="https://docs.robot-learning.co/">
         <img src="https://img.shields.io/badge/Documentation-📕-blue" alt="Chat on Discord">        
-    </a>
-    <a href="https://discord.gg/PTZ3CN5WkJ">
+    </a><a href="https://discord.gg/PTZ3CN5WkJ">
         <img src="https://img.shields.io/discord/1409155673572249672?color=7289DA&label=Discord&logo=discord&logoColor=white">
-    </a>
-    <a href="https://x.com/JannikGrothusen">
+    </a><a href="https://x.com/JannikGrothusen">
         <img src="https://img.shields.io/twitter/follow/Jannik?style=social">
     </a>
 </p>
 
-<h2 align="center">TRLC-DK1: An Open Source Dev Kit for AI-native Robotics</h2>
+<h1 align="center">An Open Source Dev Kit for AI-native Robotics</h1>
 
 ### Demo
 <p align="center">
