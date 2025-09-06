@@ -1,10 +1,21 @@
+
 <p align="center">
-    <img src="https://github.com/robot-learning-co/trlc-dk1/blob/v0.2_refactor/media/demo.gif">
+    <img src="media/xray.jpg">
 </p>
 <p align="center">
     <a href="https://discord.gg/PTZ3CN5WkJ">
         <img src="https://img.shields.io/discord/1409155673572249672?logo=discord&logoColor=white"
             alt="Chat on Discord"></a>
+</p>
+
+# TRLC-DK1
+Open Source **D**evelopment **K**it for AI-native Robotics by The Robot Learning Company.
+
+
+
+## Demo
+<p align="center">
+    <img src="media/demo.gif">
 </p>
 
 ## Examples
