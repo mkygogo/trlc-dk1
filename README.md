@@ -4,22 +4,22 @@
 </p>
 <p align="center">
     <a href="https://docs.robot-learning.co/">
-        <img src="https://img.shields.io/badge/Documentation-📕-blue" alt="Chat on Discord">        
-    </a><a href="https://discord.gg/PTZ3CN5WkJ">
-        <img src="https://img.shields.io/discord/1409155673572249672?color=7289DA&label=Discord&logo=discord&logoColor=white">
-    </a><a href="https://x.com/JannikGrothusen">
-        <img src="https://img.shields.io/twitter/follow/Jannik?style=social">
-    </a>
+        <img src="https://img.shields.io/badge/Documentation-📕-blue" alt="Chat on Discord"></a>
+    <a href="https://discord.gg/PTZ3CN5WkJ">
+        <img src="https://img.shields.io/discord/1409155673572249672?color=7289DA&label=Discord&logo=discord&logoColor=white"></a>
+    <a href="https://x.com/JannikGrothusen">
+        <img src="https://img.shields.io/twitter/follow/Jannik?style=social"></a>
 </p>
 
 <h1 align="center">An Open Source Dev Kit for AI-native Robotics</h1>
+<p align="center">by The Robot Learning Company</p>
 
-### Demo
+## Demo
 <p align="center">
     <img src="media/demo.gif">
 </p>
 
-### Examples
+## Examples
 ```bash
 lerobot-teleoperate \
     --robot.type=dk1_follower \
