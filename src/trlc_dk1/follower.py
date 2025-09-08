@@ -46,8 +46,8 @@ class DK1Follower(Robot):
         self.EMIT_VELOCITY_SCALE = 100  # rad/s
         self.EMIT_CURRENT_SCALE = 1000  # A
         
-        self.DM4310_SPEED = 200/60*2*np.pi  # rad/s (200 rpm)
-        self.DM4340_SPEED = 52.5/60*2*np.pi  # rad/s (52.5 rpm)
+        self.DM4310_SPEED = 200/60*2*np.pi   # rad/s (200  rpm | 20.94 rad/s)
+        self.DM4340_SPEED = 52.5/60*2*np.pi  # rad/s (52.5 rpm | 5.49  rad/s)
 
         self.config = config
         self.motors = {
@@ -143,11 +143,11 @@ class DK1Follower(Robot):
         # Open gripper and set zero position
         self.control.switchControlMode(
             self.motors["gripper"], Control_Type.VEL)
-        self.control.control_Vel(self.motors["gripper"], 2.0)
+        self.control.control_Vel(self.motors["gripper"], 10.0)
         while True:
             self.control.refresh_motor_status(self.motors["gripper"])
             tau = self.motors["gripper"].getTorque()
-            if tau > 0.6:
+            if tau > 0.8:
                 self.control.control_Vel(self.motors["gripper"], 0.0)
                 self.control.disable(self.motors["gripper"])
                 self.control.set_zero_position(self.motors["gripper"])
