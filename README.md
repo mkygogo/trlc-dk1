@@ -9,6 +9,8 @@
         <img src="https://img.shields.io/discord/1409155673572249672?color=7289DA&label=Discord&logo=discord&logoColor=white"></a>
     <a href="https://x.com/JannikGrothusen">
         <img src="https://img.shields.io/twitter/follow/Jannik?style=social"></a>
+    <a href="https://www.robot-learning.co/">
+        <img src=https://img.shields.io/badge/Order%20a%20kit-8A2BE2></a>
 </p>
 
 <h1 align="center">An Open Source Dev Kit for AI-native Robotics</h1>
