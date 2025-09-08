@@ -19,7 +19,25 @@
     <img src="media/demo.gif">
 </p>
 
+## Installation
+```
+conda create -n dk1 python=3.10
+conda activate dk1
+pip install -e .
+```
+(This should also install [TRLC's fork of LeRobot](https://github.com/robot-learning-co/lerobot))
+
 ## Examples
+You can use [LeRobot's CLI](https://huggingface.co/docs/lerobot/il_robots) to teleoperate the robot:
+```bash
+lerobot-teleoperate \
+    --robot.type=dk1_follower \
+    --robot.port=/dev/tty.usbmodem00000000050C1 \
+    --robot.joint_velocity_scaling=1.0 \
+    --teleop.type=dk1_leader \
+    --teleop.port=/dev/tty.usbmodem58FA0824311 \
+```
+Include a camera and view the data in Rerun:
 ```bash
 lerobot-teleoperate \
     --robot.type=dk1_follower \
@@ -30,11 +48,10 @@ lerobot-teleoperate \
     --teleop.port=/dev/tty.usbmodem58FA0824311 \
     --display_data=true
 ```
-```
-lerobot-teleoperate \
-    --robot.type=dk1_follower \
-    --robot.port=/dev/tty.usbmodem00000000050C1 \
-    --robot.joint_velocity_scaling=1.0 \
-    --teleop.type=dk1_leader \
-    --teleop.port=/dev/tty.usbmodem58FA0824311 \
-```
+
+
+## Acknowledgements
+- [Low-Cost Robot Arm](https://github.com/AlexanderKoch-Koch/low_cost_robot) by Alexander Koch
+- [GELLO](https://wuphilipp.github.io/gello_site/) by Philipp Wu et al.
+- [LeRobot](https://github.com/huggingface/lerobot) by HuggingFace, Inc.
+- [OpenArm](https://openarm.dev/) by Enactic, Inc.
