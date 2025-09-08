@@ -51,7 +51,7 @@ lerobot-teleoperate \
 
 
 ## Acknowledgements
-- [Low-Cost Robot Arm](https://github.com/AlexanderKoch-Koch/low_cost_robot) by Alexander Koch
 - [GELLO](https://wuphilipp.github.io/gello_site/) by Philipp Wu et al.
+- [Low-Cost Robot Arm](https://github.com/AlexanderKoch-Koch/low_cost_robot) by Alexander Koch
 - [LeRobot](https://github.com/huggingface/lerobot) by HuggingFace, Inc.
 - [OpenArm](https://openarm.dev/) by Enactic, Inc.
