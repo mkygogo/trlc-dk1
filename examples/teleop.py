@@ -5,7 +5,7 @@ import time
 
 follower_config = DK1FollowerConfig(
     port="/dev/tty.usbmodem00000000050C1",
-    disable_torque_on_disconnect=True,
+    joint_velocity_scaling=1.0,
 )
 
 leader_config = DK1LeaderConfig(
@@ -18,14 +18,15 @@ leader.connect()
 follower = DK1Follower(follower_config)
 follower.connect()
 
+freq = 200 # Hz
+duration = 60 # s
 
-freq = 100
-duration = 60
-
-for i in range(duration*freq):
-    action = leader.get_action()
-    formatted_action = {key: f"{val:.2f}" for key, val in action.items()}
-    print(formatted_action)
-    follower.send_action(action, V_desired=6.0)    
-    time.sleep(1/freq)
-    
+try:
+    while True:
+        action = leader.get_action()
+        follower.send_action(action)    
+        time.sleep(1/freq)
+except KeyboardInterrupt:
+    print("\nStopping teleop...")
+    leader.disconnect()
+    follower.disconnect()
