@@ -1,4 +1,3 @@
-
 <p align="center">
     <img src="media/xray.jpg">
 </p>
@@ -17,43 +16,54 @@
 <p align="center">by The Robot Learning Company</p>
 
 ## Demo
+
 <p align="center">
     <img src="media/demo.gif">
 </p>
 
 ## Installation
+
 ```
 conda create -n dk1 python=3.10
 conda activate dk1
 pip install -e .
 ```
-(This should also install [TRLC's fork of LeRobot](https://github.com/robot-learning-co/lerobot))
+
+(This should also install [TRLC's fork of LeRobot](https://github.com/robot-learning-co/lerobot) and use branch `trlc-dk1`)
 
 ## Examples
-You can use [LeRobot's CLI](https://huggingface.co/docs/lerobot/il_robots) to teleoperate the robot:
-```bash
-lerobot-teleoperate \
-    --robot.type=dk1_follower \
-    --robot.port=/dev/tty.usbmodem00000000050C1 \
-    --robot.joint_velocity_scaling=1.0 \
-    --teleop.type=dk1_leader \
-    --teleop.port=/dev/tty.usbmodem58FA0824311 \
+
+Use [LeRobot's CLI](https://huggingface.co/docs/lerobot/il_robots) to identify your teleop and robot ports:
+
 ```
-Include a camera and view the data in Rerun:
+lerobot-find-port
+```
+
+<details>
+<summary>Teleoperation
+</summary>
+
 ```bash
 lerobot-teleoperate \
     --robot.type=dk1_follower \
     --robot.port=/dev/tty.usbmodem00000000050C1 \
-    --robot.joint_velocity_scaling=1.0 \
-    --robot.cameras="{ wrist: {type: opencv, index_or_path: 0, width: 640, height: 360, fps: 30}}" \
+    --robot.joint_velocity_scaling=0.5 \
+    --robot.cameras="{ 
+        context: {type: opencv, index_or_path: 0, width: 640, height: 360, fps: 30}, 
+        wrist: {type: opencv, index_or_path: 1, width: 640, height: 360, fps: 30}
+      }" \
     --teleop.type=dk1_leader \
     --teleop.port=/dev/tty.usbmodem58FA0824311 \
     --display_data=true
 ```
+</details>
+
 
 
 ## Acknowledgements
+
 - [GELLO](https://wuphilipp.github.io/gello_site/) by Philipp Wu et al.
 - [Low-Cost Robot Arm](https://github.com/AlexanderKoch-Koch/low_cost_robot) by Alexander Koch
 - [LeRobot](https://github.com/huggingface/lerobot) by HuggingFace, Inc.
+- [SO-100](https://github.com/TheRobotStudio/SO-ARM100) by TheRobotStudio
 - [OpenArm](https://openarm.dev/) by Enactic, Inc.
