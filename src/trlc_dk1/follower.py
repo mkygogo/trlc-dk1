@@ -198,9 +198,6 @@ class DK1Follower(Robot):
         for key, motor in self.motors.items():
             if key == "gripper":
                 self.control.refresh_motor_status(motor)
-                torque = motor.getTorque()
-                if abs(torque) > 1.0:
-                    logger.warning(f"Gripper torque is too high: {torque}")
                 goal_pos[key] = map_range(goal_pos[key], 0.0, 1.0, self.gripper_open_pos, self.gripper_closed_pos)
                 self.control.control_pos_force(motor, goal_pos[key], self.DM4310_SPEED*self.EMIT_VELOCITY_SCALE,
                                                i_des=self.config.max_gripper_torque/self.DM4310_TORQUE_CONSTANT*self.EMIT_CURRENT_SCALE)
