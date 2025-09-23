@@ -39,6 +39,7 @@ TRLC-DK1 Leader CAD (Fusion)<br>
 </td>
 </tr>
 </table>
+Copyright 2025 The Robot Learning Company UG (haftungsbeschränkt). All rights reserved.
 
 ## Installation
 
