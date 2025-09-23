@@ -26,13 +26,13 @@
 <table align="center">
 <tr>
 <td width="50%">
-<a href="https://a360.co/48vL3j3">
+<a href="https://a360.co/48vL3j3" target="_blank">
 TRLC-DK1 Follower CAD (Fusion)<br>
 <img src="media/follower_cad.png" width="100%">
 </a>
 </td>
 <td width="50%">
-<a href="https://a360.co/4nmVNVC">
+<a href="https://a360.co/4nmVNVC" target="_blank">
 TRLC-DK1 Leader CAD (Fusion)<br>
 <img src="media/leader_cad.png" width="100%">
 </a>
