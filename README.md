@@ -23,16 +23,22 @@
 
 ## CAD
 
-<p align="center">
-    <a href=https://a360.co/48vL3j3 style="width: 45%; display: inline-block; margin-right: 5%;">
-        TRLC-DK1 Follower CAD (Fusion)
-        <img src="media/follower_cad.png">
-    </a>
-    <a href=https://a360.co/4nmVNVC style="width: 45%; display: inline-block">
-        TRLC-DK1 Leader CAD (Fusion)
-        <img src="media/leader_cad.png" >
-    </a>
-</p>
+<table align="center">
+<tr>
+<td width="50%">
+<a href="https://a360.co/48vL3j3">
+TRLC-DK1 Follower CAD (Fusion)<br>
+<img src="media/follower_cad.png" width="100%">
+</a>
+</td>
+<td width="50%">
+<a href="https://a360.co/4nmVNVC">
+TRLC-DK1 Leader CAD (Fusion)<br>
+<img src="media/leader_cad.png" width="100%">
+</a>
+</td>
+</tr>
+</table>
 
 ## Installation
 
