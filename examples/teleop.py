@@ -19,7 +19,6 @@ follower = DK1Follower(follower_config)
 follower.connect()
 
 freq = 200 # Hz
-duration = 60 # s
 
 try:
     while True:
