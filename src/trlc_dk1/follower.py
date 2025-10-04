@@ -23,7 +23,7 @@ from lerobot.cameras import CameraConfig
 from lerobot.cameras.utils import make_cameras_from_configs
 from lerobot.robots import Robot, RobotConfig
 from lerobot.robots.utils import ensure_safe_goal_position
-from lerobot.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
+from lerobot.utils.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 
 from trlc_dk1.motors.DM_Control_Python.DM_CAN import *
 

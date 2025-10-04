@@ -18,7 +18,7 @@ import time
 import numpy as np
 
 from lerobot.teleoperators.teleoperator import Teleoperator, TeleoperatorConfig
-from lerobot.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
+from lerobot.utils.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 from lerobot.motors import Motor, MotorNormMode
 from lerobot.motors.dynamixel import (
     DynamixelMotorsBus,
