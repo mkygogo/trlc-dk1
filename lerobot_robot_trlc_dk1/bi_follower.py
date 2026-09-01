@@ -38,6 +38,7 @@ def map_range(x: float, in_min: float, in_max: float, out_min: float, out_max: f
 class BiDK1FollowerConfig(RobotConfig):
     left_arm_port: str
     right_arm_port: str
+    control_mode: str = "impedance"
     disable_torque_on_disconnect: bool = False
     joint_velocity_scaling: float = 0.2
     max_gripper_torque: float = 1.0 # Nm (/0.00875m spur gear radius = 114N gripper force)
@@ -59,12 +60,14 @@ class BiDK1Follower(Robot):
         
         left_arm_config = DK1FollowerConfig(
             port=self.config.left_arm_port,
+            control_mode=self.config.control_mode,
             disable_torque_on_disconnect=self.config.disable_torque_on_disconnect,
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
         )
         right_arm_config = DK1FollowerConfig(
             port=self.config.right_arm_port,
+            control_mode=self.config.control_mode,
             disable_torque_on_disconnect=self.config.disable_torque_on_disconnect,
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
@@ -76,8 +79,8 @@ class BiDK1Follower(Robot):
 
     @property
     def _motors_ft(self) -> dict[str, type]:
-        return {f"left_{motor}.pos": float for motor in self.left_arm.motors} | {
-            f"right_{motor}.pos": float for motor in self.right_arm.motors
+        return {f"left_{key}": value for key, value in self.left_arm.action_features.items()} | {
+            f"right_{key}": value for key, value in self.right_arm.action_features.items()
         }
 
     @property
