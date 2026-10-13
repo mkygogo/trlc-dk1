@@ -95,6 +95,18 @@ MotorControl1.enable(Motor2)
 MotorControl1.enable(Motor3)
 ```
 
+For a reviewed multi-motor startup sequence, the SDK also provides
+`enable_many_unverified`. It writes all enable frames back-to-back and waits only
+once:
+
+```python
+sent_ids = MotorControl1.enable_many_unverified([Motor1, Motor2, Motor3])
+```
+
+The return value confirms transmission order only. The current protocol parser
+does not track an enable acknowledgement, so callers must independently verify
+feedback before treating the group as enabled.
+
 For older firmware, specify the control mode:
 
 ```python

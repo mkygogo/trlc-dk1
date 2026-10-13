@@ -226,6 +226,40 @@ class MotorControl:
         sleep(0.1)
         self.recv()  # receive the data from serial port
 
+    def enable_many_unverified(self, motors, settle_time_s: float = 0.1):
+        """Send enable frames for multiple registered motors, then receive once.
+
+        The frames are written back-to-back without the per-motor 100 ms delay in
+        :meth:`enable`.  The protocol status frames parsed by this SDK do not carry
+        a tracked enable acknowledgement, so a successful return only confirms
+        that the frames were written and the receive buffer was drained.  Callers
+        that need safety-critical group takeover must add an independent feedback
+        verification step before treating the motors as enabled.
+
+        :param motors: iterable of distinct, registered Motor objects
+        :param settle_time_s: one delay after all enable frames have been written
+        :return: tuple of SlaveIDs in transmission order
+        """
+        motors = tuple(motors)
+        if not motors:
+            raise ValueError("at least one motor is required")
+        if not np.isfinite(settle_time_s) or settle_time_s < 0:
+            raise ValueError("settle_time_s must be finite and non-negative")
+
+        slave_ids = tuple(int(motor.SlaveID) for motor in motors)
+        if len(set(slave_ids)) != len(slave_ids):
+            raise ValueError("motors must have distinct SlaveIDs")
+        for motor in motors:
+            if self.motors_map.get(motor.SlaveID) is not motor:
+                raise ValueError(f"motor {motor.SlaveID} is not registered")
+
+        for motor in motors:
+            self.__control_cmd(motor, np.uint8(0xFC))
+        if settle_time_s:
+            sleep(settle_time_s)
+        self.recv()
+        return slave_ids
+
     def enable_old(self, Motor ,ControlMode):
         """
         enable motor old firmware 使能电机旧版本固件，这个是为了旧版本电机固件的兼容性

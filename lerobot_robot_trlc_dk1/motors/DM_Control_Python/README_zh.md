@@ -96,6 +96,16 @@ MotorControl1.enable(Motor2)
 MotorControl1.enable(Motor3)
 ```
 
+经审阅的多电机启动流程也可以调用 `enable_many_unverified`。它会背靠背写出
+全部使能帧，仅在全部发送后统一等待一次：
+
+```python
+sent_ids = MotorControl1.enable_many_unverified([Motor1, Motor2, Motor3])
+```
+
+返回值只确认发送顺序。当前协议解析器不跟踪使能确认回执，因此调用方必须通过
+独立反馈检查确认电机状态，不能仅凭该方法返回就认定整组电机已经使能。
+
 如果是旧版固件，需指定控制模式：
 
 ```python
