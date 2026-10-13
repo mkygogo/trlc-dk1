@@ -146,8 +146,18 @@ sent_ids = MotorControl1.disable_many_unverified([Motor1, Motor2, Motor3])
 
 ```python
 MotorControl1.refresh_motor_status(Motor1)
-print("Motor1:", "POS:", Motor1.getPosition(), "VEL:", Motor1.getVelocity(), "TORQUE:", Motor1.getTorque())
+print(
+    "Motor1:",
+    "POS:", Motor1.getPosition(),
+    "VEL:", Motor1.getVelocity(),
+    "TORQUE:", Motor1.getTorque(),
+    "ERR:", Motor1.getErrorCode(),
+)
 ```
+
+`getErrorCode()` 返回最近反馈帧的 `ERR` 高四位；`getFeedbackSequence()` 和
+`getFeedbackMonotonic()` 提供主机侧反馈序号与单调时钟时间戳。这些字段可以识别新的
+故障/状态样本，但协议没有把它们定义为使能或失能确认。
 
 * * *
 

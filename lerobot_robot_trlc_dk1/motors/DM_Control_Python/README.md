@@ -148,8 +148,19 @@ To fetch motor status (torque, position, velocity) without sending control comma
 
 ```python
 MotorControl1.refresh_motor_status(Motor1)
-print("Motor1:","POS:", Motor1.getPosition(), "VEL:", Motor1.getVelocity(), "TORQUE:", Motor1.getTorque())
+print(
+    "Motor1:",
+    "POS:", Motor1.getPosition(),
+    "VEL:", Motor1.getVelocity(),
+    "TORQUE:", Motor1.getTorque(),
+    "ERR:", Motor1.getErrorCode(),
+)
 ```
+
+`getErrorCode()` exposes the `ERR` nibble from the latest feedback frame.
+`getFeedbackSequence()` and `getFeedbackMonotonic()` expose host-side feedback
+freshness. These fields can detect a new fault/status sample, but the protocol
+does not define them as an enable or disable acknowledgement.
 
 * * *
 

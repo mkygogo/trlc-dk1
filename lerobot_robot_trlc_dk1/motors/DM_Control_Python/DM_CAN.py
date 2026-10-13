@@ -1,8 +1,8 @@
-from time import sleep
-import numpy as np
 from enum import IntEnum
-from struct import unpack
-from struct import pack
+from struct import pack, unpack
+from time import monotonic, sleep
+
+import numpy as np
 
 
 class Motor:
@@ -18,8 +18,11 @@ class Motor:
         self.state_q = float(0)
         self.state_dq = float(0)
         self.state_tau = float(0)
-        self.state_tmos = int(0)
-        self.state_trotor = int(0)
+        self.state_tmos = 0
+        self.state_trotor = 0
+        self.state_error = 0
+        self.feedback_sequence = 0
+        self.feedback_monotonic = None
         self.SlaveID = SlaveID
         self.MasterID = MasterID
         self.MotorType = MotorType
@@ -34,12 +37,16 @@ class Motor:
         tau: float,
         tmos: int = 0,
         trotor: int = 0,
+        error_code: int = 0,
     ):
         self.state_q = q
         self.state_dq = dq
         self.state_tau = tau
         self.state_tmos = int(tmos)
         self.state_trotor = int(trotor)
+        self.state_error = int(error_code)
+        self.feedback_sequence += 1
+        self.feedback_monotonic = monotonic()
 
     def getPosition(self):
         """
@@ -69,6 +76,18 @@ class Motor:
     def getTemperatureRotor(self):
         """Return the rotor temperature byte reported in the motor status frame."""
         return self.state_trotor
+
+    def getErrorCode(self):
+        """Return the ERR nibble from the latest motor feedback frame."""
+        return self.state_error
+
+    def getFeedbackSequence(self):
+        """Return a counter incremented for each parsed motor feedback frame."""
+        return self.feedback_sequence
+
+    def getFeedbackMonotonic(self):
+        """Return the host monotonic timestamp of the latest parsed feedback."""
+        return self.feedback_monotonic
 
     def getParam(self, RID):
         """
@@ -344,6 +363,7 @@ class MotorControl:
 
     def __process_packet(self, data, CANID, CMD):
         if CMD == 0x11:
+            error_code = int((int(data[0]) >> 4) & 0x0f)
             if CANID != 0x00:
                 if CANID in self.motors_map:
                     q_uint = np.uint16((np.uint16(data[1]) << 8) | data[2])
@@ -357,7 +377,12 @@ class MotorControl:
                     recv_dq = uint_to_float(dq_uint, -DQ_MAX, DQ_MAX, 12)
                     recv_tau = uint_to_float(tau_uint, -TAU_MAX, TAU_MAX, 12)
                     self.motors_map[CANID].recv_data(
-                        recv_q, recv_dq, recv_tau, int(data[6]), int(data[7])
+                        recv_q,
+                        recv_dq,
+                        recv_tau,
+                        int(data[6]),
+                        int(data[7]),
+                        error_code,
                     )
             else:
                 MasterID=data[0] & 0x0f
@@ -373,7 +398,12 @@ class MotorControl:
                     recv_dq = uint_to_float(dq_uint, -DQ_MAX, DQ_MAX, 12)
                     recv_tau = uint_to_float(tau_uint, -TAU_MAX, TAU_MAX, 12)
                     self.motors_map[MasterID].recv_data(
-                        recv_q, recv_dq, recv_tau, int(data[6]), int(data[7])
+                        recv_q,
+                        recv_dq,
+                        recv_tau,
+                        int(data[6]),
+                        int(data[7]),
+                        error_code,
                     )
 
 

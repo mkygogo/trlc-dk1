@@ -154,3 +154,37 @@ def test_disable_many_rejects_empty_duplicate_or_unregistered_groups() -> None:
 
     assert serial.writes == []
     assert serial.read_count == 0
+
+
+def test_feedback_tracks_error_nibble_sequence_and_timestamp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control, motors, _serial = _control_with_motors(1)
+    motor = motors[0]
+    timestamps = iter((12.5, 13.0))
+    monkeypatch.setattr(DM_CAN, "monotonic", lambda: next(timestamps))
+
+    normal = [0x01, 0x80, 0x00, 0x80, 0x08, 0x00, 31, 30]
+    fault = [0xB1, 0x80, 0x00, 0x80, 0x08, 0x00, 32, 31]
+    control._MotorControl__process_packet(normal, 1, 0x11)
+
+    assert motor.getErrorCode() == 0
+    assert motor.getFeedbackSequence() == 1
+    assert motor.getFeedbackMonotonic() == pytest.approx(12.5)
+
+    control._MotorControl__process_packet(fault, 1, 0x11)
+
+    assert motor.getErrorCode() == 0xB
+    assert motor.getFeedbackSequence() == 2
+    assert motor.getFeedbackMonotonic() == pytest.approx(13.0)
+
+
+def test_master_id_zero_feedback_tracks_error_nibble() -> None:
+    control, motors, _serial = _control_with_motors(1)
+    motor = motors[0]
+    fault = [0xD1, 0x80, 0x00, 0x80, 0x08, 0x00, 33, 32]
+
+    control._MotorControl__process_packet(fault, 0, 0x11)
+
+    assert motor.getErrorCode() == 0xD
+    assert motor.getFeedbackSequence() == 1
