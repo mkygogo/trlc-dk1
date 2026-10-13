@@ -289,6 +289,44 @@ class MotorControl:
         self.recv()
         return slave_ids
 
+    def enable_many_timed_unverified(self, motors, settle_time_s: float = 0.0):
+        """Send an enable group and expose host-side transport timestamps.
+
+        ``last_frame_write_monotonic_s`` is captured immediately after the final
+        serial ``write`` returns and before any optional wait or receive-buffer
+        drain. It is suitable as a conservative host-side origin for a bounded
+        post-enable command gap. It is not a device acknowledgement timestamp.
+
+        The method intentionally keeps :meth:`enable_many_unverified` unchanged
+        for existing callers. Like that method, its return only proves host
+        transmission order; fresh per-motor status feedback is still required.
+        """
+        motors = tuple(motors)
+        if not motors:
+            raise ValueError("at least one motor is required")
+        if not np.isfinite(settle_time_s) or settle_time_s < 0:
+            raise ValueError("settle_time_s must be finite and non-negative")
+
+        slave_ids = tuple(int(motor.SlaveID) for motor in motors)
+        if len(set(slave_ids)) != len(slave_ids):
+            raise ValueError("motors must have distinct SlaveIDs")
+        for motor in motors:
+            if self.motors_map.get(motor.SlaveID) is not motor:
+                raise ValueError(f"motor {motor.SlaveID} is not registered")
+
+        for motor in motors:
+            self.__control_cmd(motor, np.uint8(0xFC))
+        last_write_s = monotonic()
+        if settle_time_s:
+            sleep(settle_time_s)
+        self.recv()
+        receive_complete_s = monotonic()
+        return {
+            "slave_ids": slave_ids,
+            "last_frame_write_monotonic_s": last_write_s,
+            "receive_complete_monotonic_s": receive_complete_s,
+        }
+
     def enable_old(self, Motor ,ControlMode):
         """
         enable motor old firmware 使能电机旧版本固件，这个是为了旧版本电机固件的兼容性
