@@ -315,9 +315,9 @@ class MotorControl:
         """Send disable frames for multiple registered motors, then receive once.
 
         The frames are written back-to-back without the per-motor 100 ms delay in
-        :meth:`disable`.  As with :meth:`enable_many_unverified`, the current SDK
-        parser does not track a protocol acknowledgement.  A successful return
-        confirms transmission order and a receive-buffer drain only.
+        :meth:`disable`. A successful return confirms transmission order and a
+        receive-buffer drain only. Callers must correlate later fresh status-0
+        feedback and account for delayed responses to earlier commands.
 
         :param motors: iterable of distinct, registered Motor objects
         :param settle_time_s: one delay after all disable frames have been written
