@@ -155,9 +155,11 @@ print(
 )
 ```
 
-`getErrorCode()` 返回最近反馈帧的 `ERR` 高四位；`getFeedbackSequence()` 和
+`getFeedbackStatusCode()` 返回最近反馈帧的状态高四位：`0` 表示失能、`1` 表示使能、
+`0x8..0xE` 表示电机故障。`getErrorCode()` 保留为返回同一完整状态值的兼容别名；
+`getFeedbackSequence()` 和
 `getFeedbackMonotonic()` 提供主机侧反馈序号与单调时钟时间戳。这些字段可以识别新的
-故障/状态样本，但协议没有把它们定义为使能或失能确认。
+状态样本；新鲜状态 `1` 或 `0` 可确认使能或失能，命令发送成功本身仍不能确认。
 
 * * *
 

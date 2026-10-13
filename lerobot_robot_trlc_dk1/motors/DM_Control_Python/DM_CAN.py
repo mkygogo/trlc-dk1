@@ -20,6 +20,10 @@ class Motor:
         self.state_tau = float(0)
         self.state_tmos = 0
         self.state_trotor = 0
+        self.state_status = 0
+        # Compatibility alias for callers written against the original SDK.
+        # The feedback nibble is a status field: 0=disabled, 1=enabled,
+        # 8..E=fault. It is not an error-only value.
         self.state_error = 0
         self.feedback_sequence = 0
         self.feedback_monotonic = None
@@ -37,14 +41,16 @@ class Motor:
         tau: float,
         tmos: int = 0,
         trotor: int = 0,
-        error_code: int = 0,
+        status_code: int = 0,
     ):
         self.state_q = q
         self.state_dq = dq
         self.state_tau = tau
         self.state_tmos = int(tmos)
         self.state_trotor = int(trotor)
-        self.state_error = int(error_code)
+        self.state_status = int(status_code)
+        self.state_error = self.state_status
+        self.isEnable = self.state_status == 1
         self.feedback_sequence += 1
         self.feedback_monotonic = monotonic()
 
@@ -78,8 +84,12 @@ class Motor:
         return self.state_trotor
 
     def getErrorCode(self):
-        """Return the ERR nibble from the latest motor feedback frame."""
+        """Compatibility alias returning the complete feedback status nibble."""
         return self.state_error
+
+    def getFeedbackStatusCode(self):
+        """Return feedback status: 0 disabled, 1 enabled, 8..E fault."""
+        return self.state_status
 
     def getFeedbackSequence(self):
         """Return a counter incremented for each parsed motor feedback frame."""

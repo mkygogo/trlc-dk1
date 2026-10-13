@@ -157,10 +157,12 @@ print(
 )
 ```
 
-`getErrorCode()` exposes the `ERR` nibble from the latest feedback frame.
+`getFeedbackStatusCode()` exposes the status nibble from the latest feedback
+frame: `0` means disabled, `1` means enabled, and `0x8..0xE` are motor faults.
+`getErrorCode()` remains as a compatibility alias for the same complete nibble.
 `getFeedbackSequence()` and `getFeedbackMonotonic()` expose host-side feedback
-freshness. These fields can detect a new fault/status sample, but the protocol
-does not define them as an enable or disable acknowledgement.
+freshness. A fresh status `1` or `0` confirms enabled or disabled state;
+successful command transmission alone does not.
 
 * * *
 
