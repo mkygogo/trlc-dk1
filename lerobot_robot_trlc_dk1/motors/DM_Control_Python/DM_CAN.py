@@ -282,6 +282,38 @@ class MotorControl:
         sleep(0.1)
         self.recv()  # receive the data from serial port
 
+    def disable_many_unverified(self, motors, settle_time_s: float = 0.1):
+        """Send disable frames for multiple registered motors, then receive once.
+
+        The frames are written back-to-back without the per-motor 100 ms delay in
+        :meth:`disable`.  As with :meth:`enable_many_unverified`, the current SDK
+        parser does not track a protocol acknowledgement.  A successful return
+        confirms transmission order and a receive-buffer drain only.
+
+        :param motors: iterable of distinct, registered Motor objects
+        :param settle_time_s: one delay after all disable frames have been written
+        :return: tuple of SlaveIDs in transmission order
+        """
+        motors = tuple(motors)
+        if not motors:
+            raise ValueError("at least one motor is required")
+        if not np.isfinite(settle_time_s) or settle_time_s < 0:
+            raise ValueError("settle_time_s must be finite and non-negative")
+
+        slave_ids = tuple(int(motor.SlaveID) for motor in motors)
+        if len(set(slave_ids)) != len(slave_ids):
+            raise ValueError("motors must have distinct SlaveIDs")
+        for motor in motors:
+            if self.motors_map.get(motor.SlaveID) is not motor:
+                raise ValueError(f"motor {motor.SlaveID} is not registered")
+
+        for motor in motors:
+            self.__control_cmd(motor, np.uint8(0xFD))
+        if settle_time_s:
+            sleep(settle_time_s)
+        self.recv()
+        return slave_ids
+
     def set_zero_position(self, Motor):
         """
         set the zero position of the motor 设置电机0位

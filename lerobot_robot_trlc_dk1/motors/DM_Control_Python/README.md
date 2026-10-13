@@ -131,6 +131,17 @@ MotorControl1.disable(Motor3)
 MotorControl1.disable(Motor6)
 ```
 
+For a reviewed emergency-clear sequence, `disable_many_unverified` writes all
+disable frames back-to-back and waits only once:
+
+```python
+sent_ids = MotorControl1.disable_many_unverified([Motor1, Motor2, Motor3])
+```
+
+The return value confirms transmission order only. The current parser does not
+track a disable acknowledgement, so safety-critical callers still need an
+independent disabled-state observation and a fallback path for write failures.
+
 ### 3.5 Fetching Motor Status
 
 To fetch motor status (torque, position, velocity) without sending control commands:

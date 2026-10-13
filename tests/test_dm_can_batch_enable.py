@@ -94,3 +94,63 @@ def test_enable_many_rejects_empty_duplicate_or_unregistered_groups() -> None:
 
     assert serial.writes == []
     assert serial.read_count == 0
+
+
+def test_disable_many_writes_all_frames_before_single_wait_and_receive(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control, motors, serial = _control_with_motors()
+    events: list[tuple[str, float | None]] = []
+
+    original_write = serial.write
+    original_read_all = serial.read_all
+
+    def record_write(data: bytes) -> None:
+        events.append(("write", None))
+        original_write(data)
+
+    def record_sleep(seconds: float) -> None:
+        events.append(("sleep", seconds))
+
+    def record_read_all() -> bytes:
+        events.append(("read", None))
+        return original_read_all()
+
+    serial.write = record_write
+    serial.read_all = record_read_all
+    monkeypatch.setattr(DM_CAN, "sleep", record_sleep)
+
+    sent_ids = control.disable_many_unverified(motors, settle_time_s=0.015)
+
+    assert sent_ids == (1, 2, 3, 4, 5, 6)
+    assert events == [("write", None)] * 6 + [("sleep", 0.015), ("read", None)]
+    assert serial.read_count == 1
+    assert [frame[13] | (frame[14] << 8) for frame in serial.writes] == list(sent_ids)
+    assert all(frame[21:29] == b"\xff" * 7 + b"\xfd" for frame in serial.writes)
+
+
+@pytest.mark.parametrize("settle_time_s", [-0.001, float("nan"), float("inf")])
+def test_disable_many_rejects_invalid_settle_time(settle_time_s: float) -> None:
+    control, motors, serial = _control_with_motors(1)
+
+    with pytest.raises(ValueError, match="finite and non-negative"):
+        control.disable_many_unverified(motors, settle_time_s=settle_time_s)
+
+    assert serial.writes == []
+    assert serial.read_count == 0
+
+
+def test_disable_many_rejects_empty_duplicate_or_unregistered_groups() -> None:
+    control, motors, serial = _control_with_motors(2)
+
+    with pytest.raises(ValueError, match="at least one"):
+        control.disable_many_unverified([])
+    with pytest.raises(ValueError, match="distinct SlaveIDs"):
+        control.disable_many_unverified([motors[0], motors[0]])
+
+    replacement = DM_CAN.Motor(DM_CAN.DM_Motor_Type.DM4340, 1, 0)
+    with pytest.raises(ValueError, match="not registered"):
+        control.disable_many_unverified([replacement])
+
+    assert serial.writes == []
+    assert serial.read_count == 0

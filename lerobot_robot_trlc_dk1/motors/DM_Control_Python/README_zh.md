@@ -130,6 +130,16 @@ MotorControl1.disable(Motor3)
 MotorControl1.disable(Motor6)
 ```
 
+经审阅的紧急清退流程可以调用 `disable_many_unverified`，背靠背写出全部失能帧，
+只在发送完成后统一等待一次：
+
+```python
+sent_ids = MotorControl1.disable_many_unverified([Motor1, Motor2, Motor3])
+```
+
+返回值只确认发送顺序。当前解析器不跟踪失能确认回执，因此安全关键调用方仍需独立观察
+失能状态，并为中途写失败保留后备清退路径。
+
 ### 3.5 获取电机状态
 
 通过以下代码可以获取电机的实时状态（位置、速度、力矩等）：
