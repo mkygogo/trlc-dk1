@@ -205,6 +205,80 @@ def test_timed_group_mit_rejects_invalid_groups_before_writing() -> None:
     assert serial.read_count == 0
 
 
+def test_timed_group_status_requests_are_read_only_and_flushed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control, motors, serial = _control_with_motors(3)
+    events: list[tuple[str, float | None]] = []
+    timestamps = iter((30.1, 30.2, 30.3, 30.35, 30.4))
+
+    original_write = serial.write
+    original_read_all = serial.read_all
+
+    def record_write(data: bytes) -> None:
+        events.append(("write", None))
+        original_write(data)
+
+    def record_flush() -> None:
+        events.append(("flush", None))
+
+    def record_read_all() -> bytes:
+        events.append(("read", None))
+        return original_read_all()
+
+    def record_monotonic() -> float:
+        value = next(timestamps)
+        events.append(("monotonic", value))
+        return value
+
+    serial.write = record_write
+    serial.flush = record_flush
+    serial.read_all = record_read_all
+    monkeypatch.setattr(DM_CAN, "monotonic", record_monotonic)
+
+    result = control.refresh_many_timed_unverified(motors)
+
+    assert result == {
+        "slave_ids": (1, 2, 3),
+        "write_complete_monotonic_s": (30.1, 30.2, 30.3),
+        "transmit_complete_monotonic_s": 30.35,
+        "receive_complete_monotonic_s": 30.4,
+    }
+    assert events == [
+        ("write", None),
+        ("monotonic", 30.1),
+        ("write", None),
+        ("monotonic", 30.2),
+        ("write", None),
+        ("monotonic", 30.3),
+        ("flush", None),
+        ("monotonic", 30.35),
+        ("read", None),
+        ("monotonic", 30.4),
+    ]
+    assert all(frame[13] | (frame[14] << 8) == 0x7FF for frame in serial.writes)
+    assert [frame[21:24] for frame in serial.writes] == [
+        bytes((1, 0, 0xCC)),
+        bytes((2, 0, 0xCC)),
+        bytes((3, 0, 0xCC)),
+    ]
+
+
+def test_timed_group_status_rejects_invalid_groups_before_writing() -> None:
+    control, motors, serial = _control_with_motors(2)
+
+    with pytest.raises(ValueError, match="at least one"):
+        control.refresh_many_timed_unverified([])
+    with pytest.raises(ValueError, match="distinct"):
+        control.refresh_many_timed_unverified([motors[0], motors[0]])
+    replacement = DM_CAN.Motor(DM_CAN.DM_Motor_Type.DM4340, 1, 0)
+    with pytest.raises(ValueError, match="not registered"):
+        control.refresh_many_timed_unverified([replacement])
+
+    assert serial.writes == []
+    assert serial.read_count == 0
+
+
 @pytest.mark.parametrize("settle_time_s", [-0.001, float("nan"), float("inf")])
 def test_timed_enable_rejects_invalid_settle_time(settle_time_s: float) -> None:
     control, motors, serial = _control_with_motors(1)

@@ -632,6 +632,45 @@ class MotorControl:
         self.__send_data(0x7FF, data_buf)
         self.recv()  # receive the data from serial port
 
+    def refresh_many_timed_unverified(self, motors):
+        """Write distinct status requests back-to-back and expose host timing.
+
+        This is a read-only transport primitive: it sends the same ``0xCC``
+        status request used by :meth:`refresh_motor_status`, never enable,
+        disable, mode, zero, or control frames.  Fresh per-axis replies must be
+        verified by the caller.
+        """
+        motors = tuple(motors)
+        if not motors:
+            raise ValueError("at least one motor is required")
+        slave_ids = tuple(int(motor.SlaveID) for motor in motors)
+        if len(set(slave_ids)) != len(slave_ids):
+            raise ValueError("motors must have distinct SlaveIDs")
+        for motor in motors:
+            if self.motors_map.get(motor.SlaveID) is not motor:
+                raise ValueError(f"motor {motor.SlaveID} is not registered")
+
+        write_complete_s = []
+        for motor in motors:
+            can_id_l = motor.SlaveID & 0xff
+            can_id_h = (motor.SlaveID >> 8) & 0xff
+            data_buf = np.array(
+                [can_id_l, can_id_h, 0xCC, 0x00, 0x00, 0x00, 0x00, 0x00],
+                np.uint8,
+            )
+            self.__send_data(0x7FF, data_buf)
+            write_complete_s.append(monotonic())
+        self.serial_.flush()
+        transmit_complete_s = monotonic()
+        self.recv()
+        receive_complete_s = monotonic()
+        return {
+            "slave_ids": slave_ids,
+            "write_complete_monotonic_s": tuple(write_complete_s),
+            "transmit_complete_monotonic_s": transmit_complete_s,
+            "receive_complete_monotonic_s": receive_complete_s,
+        }
+
     def change_motor_param(self, Motor, RID, data):
         """
         change the RID of the motor 改变电机的参数
