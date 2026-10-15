@@ -149,6 +149,11 @@ class MotorControl:
         if DM_Motor.SlaveID not in self.motors_map:
             print("controlMIT ERROR : Motor ID not found")
             return
+        data_buf = self.__encode_mit_data(DM_Motor, kp, kd, q, dq, tau)
+        self.__send_data(DM_Motor.SlaveID, data_buf)
+        self.recv()  # receive the data from serial port
+
+    def __encode_mit_data(self, DM_Motor, kp: float, kd: float, q: float, dq: float, tau: float):
         kp_uint = float_to_uint(kp, 0, 500, 12)
         kd_uint = float_to_uint(kd, 0, 5, 12)
         MotorType = DM_Motor.MotorType
@@ -167,8 +172,50 @@ class MotorControl:
         data_buf[5] = kd_uint >> 4
         data_buf[6] = ((kd_uint & 0xf) << 4) | ((tau_uint >> 8) & 0xf)
         data_buf[7] = tau_uint & 0xff
-        self.__send_data(DM_Motor.SlaveID, data_buf)
-        self.recv()  # receive the data from serial port
+        return data_buf
+
+    def controlMIT_many_timed_unverified(self, commands):
+        """Write distinct registered MIT commands back-to-back, then receive once.
+
+        Each command is ``(motor, kp, kd, q, dq, tau)``.  Per-axis timestamps are
+        captured immediately after the corresponding serial ``write`` returns.
+        They are host transport evidence only, not motor acknowledgements.  Fresh
+        feedback sequence and status checks remain the caller's responsibility.
+        """
+        commands = tuple(commands)
+        if not commands:
+            raise ValueError("at least one MIT command is required")
+        if any(len(command) != 6 for command in commands):
+            raise ValueError("each MIT command must contain motor plus five values")
+        motors = tuple(command[0] for command in commands)
+        slave_ids = tuple(int(motor.SlaveID) for motor in motors)
+        if len(set(slave_ids)) != len(slave_ids):
+            raise ValueError("MIT command motors must have distinct SlaveIDs")
+        for motor in motors:
+            if self.motors_map.get(motor.SlaveID) is not motor:
+                raise ValueError(f"motor {motor.SlaveID} is not registered")
+        encoded = []
+        for command in commands:
+            motor, kp, kd, q, dq, tau = command
+            values = np.asarray([kp, kd, q, dq, tau], dtype=float)
+            if not np.all(np.isfinite(values)):
+                raise ValueError(f"motor {motor.SlaveID} MIT command is non-finite")
+            encoded.append(self.__encode_mit_data(motor, kp, kd, q, dq, tau))
+
+        write_complete_s = []
+        for motor, data_buf in zip(motors, encoded, strict=True):
+            self.__send_data(motor.SlaveID, data_buf)
+            write_complete_s.append(monotonic())
+        self.serial_.flush()
+        transmit_complete_s = monotonic()
+        self.recv()
+        receive_complete_s = monotonic()
+        return {
+            "slave_ids": slave_ids,
+            "write_complete_monotonic_s": tuple(write_complete_s),
+            "transmit_complete_monotonic_s": transmit_complete_s,
+            "receive_complete_monotonic_s": receive_complete_s,
+        }
 
     def control_delay(self, DM_Motor, kp: float, kd: float, q: float, dq: float, tau: float, delay: float):
         """
@@ -317,6 +364,8 @@ class MotorControl:
         for motor in motors:
             self.__control_cmd(motor, np.uint8(0xFC))
         last_write_s = monotonic()
+        self.serial_.flush()
+        transmit_complete_s = monotonic()
         if settle_time_s:
             sleep(settle_time_s)
         self.recv()
@@ -324,6 +373,7 @@ class MotorControl:
         return {
             "slave_ids": slave_ids,
             "last_frame_write_monotonic_s": last_write_s,
+            "transmit_complete_monotonic_s": transmit_complete_s,
             "receive_complete_monotonic_s": receive_complete_s,
         }
 
